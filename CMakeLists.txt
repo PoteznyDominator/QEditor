@@ -14,7 +14,7 @@ find_package(Qt5 COMPONENTS
         Widgets
         REQUIRED)
 
-add_executable(QEditior main.cpp)
+add_executable(QEditior main.cpp src/MainWindow.cpp src/MainWindow.h src/EditorWidget.cpp src/EditorWidget.h src/LineNumberArea.cpp src/LineNumberArea.h)
 target_link_libraries(QEditior
         Qt5::Core
         Qt5::Gui

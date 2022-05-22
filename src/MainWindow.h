@@ -23,6 +23,9 @@ private:
   void initUI();
   void initWelcomeWidget();
   void initTabWidget();
+  void initMenuBar();
+
+  QAction* getAction(const QString& text, QKeySequence shortCut = 0);
 };
 
 

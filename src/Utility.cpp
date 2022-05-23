@@ -12,6 +12,7 @@ QString Utils::getFileName(const QString &filePath) {
 }
 int Utils::getIndexOfOpenedFile(const QString &filePath, QTabWidget *tabWidget) {
   for (int i = 0; i < tabWidget->count(); i++) {
-    return tabWidget->tabToolTip(i) == filePath ? i : 0;
+    if (tabWidget->tabToolTip(i) == filePath) return i;
   }
+  return 0;
 }

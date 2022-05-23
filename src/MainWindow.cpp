@@ -57,6 +57,7 @@ void MainWindow::initWelcomeWidget() {
   welcomeLabel->setAlignment(Qt::AlignCenter);
 
   connect(openFileBtn, &QPushButton::clicked, this, &MainWindow::openFile);
+  connect(newFileBtn, &QPushButton::clicked, this, &MainWindow::newFile);
 
   layout->addStretch();
   layout->addWidget(welcomeLabel);
@@ -91,7 +92,7 @@ void MainWindow::initMenuBar() {
   auto *optionsSection = new QMenu("&Options");
   auto *helpSection = new QMenu("&Help");
 
-  fileSection->addAction(getAction("New", QKeySequence::New));
+  fileSection->addAction(getAction("New", QKeySequence::New, &MainWindow::newFile));
   fileSection->addAction(getAction("Open", QKeySequence::Open, &MainWindow::openFile));
   fileSection->addAction(getAction("Save", QKeySequence::Save));
   fileSection->addAction(getAction("Save as", QKeySequence("Ctrl+Shift+s")));
@@ -128,6 +129,8 @@ void MainWindow::openFile() {
     addFileToTabWidget(filePath, content);
   }
 }
+
+void MainWindow::newFile() { addFileToTabWidget("Untitled"); }
 
 void MainWindow::addFileToTabWidget(const QString &filePath, const QString &fileContent) {
   if (stackedWidget_->currentWidget() == welcomeWidget_)

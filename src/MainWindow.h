@@ -25,7 +25,12 @@ private:
   void initTabWidget();
   void initMenuBar();
 
-  QAction* getAction(const QString& text, QKeySequence shortCut = 0);
+  void openFile();
+  void newFile();
+  void addFileToTabWidget(const QString &filePath, const QString &fileContent = "");
+
+  QAction *getAction(const QString &text, QKeySequence shortCut = 0,
+                     void (MainWindow::*slot)() = nullptr);
 };
 
 

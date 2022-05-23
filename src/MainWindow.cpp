@@ -4,8 +4,11 @@
 
 #include "MainWindow.h"
 #include "EditorWidget.h"
+#include "Utility.h"
 #include <QAction>
 #include <QBoxLayout>
+#include <QDebug>
+#include <QFileDialog>
 #include <QLabel>
 #include <QMenuBar>
 #include <QPushButton>
@@ -31,7 +34,7 @@ void MainWindow::initUI() {
 
   stackedWidget_->addWidget(welcomeWidget_);
   stackedWidget_->addWidget(tabWidget_);
-  stackedWidget_->setCurrentWidget(tabWidget_);
+  stackedWidget_->setCurrentWidget(welcomeWidget_);
 
   splitter->addWidget(treeWidget_);
   splitter->addWidget(stackedWidget_);
@@ -53,6 +56,8 @@ void MainWindow::initWelcomeWidget() {
   auto *welcomeLabel = new QLabel("Welcome to QEditor ;)");
   welcomeLabel->setAlignment(Qt::AlignCenter);
 
+  connect(openFileBtn, &QPushButton::clicked, this, &MainWindow::openFile);
+
   layout->addStretch();
   layout->addWidget(welcomeLabel);
   layout->addWidget(newFileBtn);
@@ -68,21 +73,26 @@ void MainWindow::initTabWidget() {
   tabWidget_->setMovable(true);
   tabWidget_->setTabsClosable(true);
 }
-QAction *MainWindow::getAction(const QString &text, QKeySequence shortCut) {
+QAction *MainWindow::getAction(const QString &text, QKeySequence shortCut,
+                               void (MainWindow::*slot)()) {
   auto *action = new QAction(text, this);
-  if (!shortCut.isEmpty()) { action->setShortcut(shortCut); }
+  // skipping shortcut if doesn't exist
+  if (!shortCut.isEmpty()) action->setShortcut(shortCut);
+  // connecting function to action
+  if (slot) connect(action, &QAction::triggered, this, slot);
   return action;
 }
+
 void MainWindow::initMenuBar() {
   auto *menuBar = new QMenuBar(this);
 
-  auto* fileSection = new QMenu("&File");
-  auto* editSection = new QMenu("&Edit");
-  auto* optionsSection = new QMenu("&Options");
-  auto* helpSection = new QMenu("&Help");
+  auto *fileSection = new QMenu("&File");
+  auto *editSection = new QMenu("&Edit");
+  auto *optionsSection = new QMenu("&Options");
+  auto *helpSection = new QMenu("&Help");
 
   fileSection->addAction(getAction("New", QKeySequence::New));
-  fileSection->addAction(getAction("Open", QKeySequence::Open));
+  fileSection->addAction(getAction("Open", QKeySequence::Open, &MainWindow::openFile));
   fileSection->addAction(getAction("Save", QKeySequence::Save));
   fileSection->addAction(getAction("Save as", QKeySequence("Ctrl+Shift+s")));
 
@@ -99,4 +109,42 @@ void MainWindow::initMenuBar() {
   menuBar->addMenu(helpSection);
 
   setMenuBar(menuBar);
+}
+
+void MainWindow::openFile() {
+  auto filePath = QFileDialog::getOpenFileName(this, "Open file");
+  if (!filePath.isEmpty()) {
+    QFile file(filePath);
+    // check if file can be opened
+    if (!file.open(QIODevice::Text | QIODevice::ReadOnly)) {
+      //TODO: add error message as qdialog
+      qDebug() << "ERROR: Could not open file: " + filePath;
+    }
+
+    QTextStream in(&file);
+    auto content = in.readAll();
+    file.close();
+
+    addFileToTabWidget(filePath, content);
+  }
+}
+
+void MainWindow::addFileToTabWidget(const QString &filePath, const QString &fileContent) {
+  if (stackedWidget_->currentWidget() == welcomeWidget_)
+    stackedWidget_->setCurrentWidget(tabWidget_);
+
+  const auto fileName = Utils::getFileName(filePath);
+
+  // if file is already opened set it as current widget
+  int index = Utils::getIndexOfOpenedFile(filePath, tabWidget_);
+  if (index) {
+    tabWidget_->setCurrentIndex(index);
+    return;
+  }
+
+  auto *editor = new EditorWidget(tabWidget_);
+  editor->setPlainText(fileContent);
+  tabWidget_->addTab(editor, fileName);
+  tabWidget_->setTabToolTip(tabWidget_->count() - 1, filePath);
+  tabWidget_->setCurrentIndex(tabWidget_->count() - 1);
 }

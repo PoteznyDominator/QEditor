@@ -10,21 +10,22 @@
 class EditorWidget : public QPlainTextEdit {
   Q_OBJECT
 public:
-  EditorWidget(QWidget *parent = nullptr);
+  explicit EditorWidget(QWidget* parent = nullptr);
 
-  void lineNumberAreaPaintEvent(QPaintEvent *event);
+  void lineNumberAreaPaintEvent(QPaintEvent* event);
   int lineNumberAreaWidth();
+  bool isChanged() const;
 
 protected:
-  void resizeEvent(QResizeEvent *event) override;
-
-private slots:
-  void updateLineNumberAreaWidth(int newBlockCount);
-  void highlightCurrentLine();
-  void updateLineNumberArea(const QRect &rect, int dy);
+  void resizeEvent(QResizeEvent* event) override;
 
 private:
-  QWidget *lineNumberArea;
+  bool isChanged_;
+  QWidget* lineNumberArea;
+
+  void updateLineNumberAreaWidth(int newBlockCount);
+  void highlightCurrentLine();
+  void updateLineNumberArea(const QRect& rect, int dy);
 };
 
 #endif//QEDITIOR_EDITORWIDGET_H

@@ -14,7 +14,7 @@
 #include <QPushButton>
 #include <QSplitter>
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
+MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   setCentralWidget(new QWidget);
   initUI();
   initMenuBar();
@@ -23,8 +23,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 void MainWindow::initUI() {
   setMinimumSize(800, 600);
 
-  auto *layout = new QBoxLayout(QBoxLayout::TopToBottom);
-  auto *splitter = new QSplitter(this);
+  auto* layout = new QBoxLayout(QBoxLayout::TopToBottom);
+  auto* splitter = new QSplitter(this);
 
   treeWidget_ = new QTreeWidget;
   stackedWidget_ = new QStackedWidget;
@@ -50,10 +50,10 @@ void MainWindow::initUI() {
 void MainWindow::initWelcomeWidget() {
   welcomeWidget_ = new QWidget;
 
-  auto *layout = new QBoxLayout(QBoxLayout::TopToBottom);
-  auto *newFileBtn = new QPushButton("New file");
-  auto *openFileBtn = new QPushButton("Open file");
-  auto *welcomeLabel = new QLabel("Welcome to QEditor ;)");
+  auto* layout = new QBoxLayout(QBoxLayout::TopToBottom);
+  auto* newFileBtn = new QPushButton("New file");
+  auto* openFileBtn = new QPushButton("Open file");
+  auto* welcomeLabel = new QLabel("Welcome to QEditor ;)");
   welcomeLabel->setAlignment(Qt::AlignCenter);
 
   connect(openFileBtn, &QPushButton::clicked, this, &MainWindow::openFile);
@@ -70,13 +70,13 @@ void MainWindow::initWelcomeWidget() {
 
 void MainWindow::initTabWidget() {
   tabWidget_ = new QTabWidget;
-  tabWidget_->addTab(new EditorWidget, "tab");
   tabWidget_->setMovable(true);
   tabWidget_->setTabsClosable(true);
+  connect(tabWidget_, &QTabWidget::tabCloseRequested, this, &MainWindow::closeTab);
 }
-QAction *MainWindow::getAction(const QString &text, QKeySequence shortCut,
+QAction* MainWindow::getAction(const QString& text, QKeySequence shortCut,
                                void (MainWindow::*slot)()) {
-  auto *action = new QAction(text, this);
+  auto* action = new QAction(text, this);
   // skipping shortcut if doesn't exist
   if (!shortCut.isEmpty()) action->setShortcut(shortCut);
   // connecting function to action
@@ -85,17 +85,18 @@ QAction *MainWindow::getAction(const QString &text, QKeySequence shortCut,
 }
 
 void MainWindow::initMenuBar() {
-  auto *menuBar = new QMenuBar(this);
+  auto* menuBar = new QMenuBar(this);
 
-  auto *fileSection = new QMenu("&File");
-  auto *editSection = new QMenu("&Edit");
-  auto *optionsSection = new QMenu("&Options");
-  auto *helpSection = new QMenu("&Help");
+  auto* fileSection = new QMenu("&File");
+  auto* editSection = new QMenu("&Edit");
+  auto* optionsSection = new QMenu("&Options");
+  auto* helpSection = new QMenu("&Help");
 
   fileSection->addAction(getAction("New", QKeySequence::New, &MainWindow::newFile));
   fileSection->addAction(getAction("Open", QKeySequence::Open, &MainWindow::openFile));
-  fileSection->addAction(getAction("Save", QKeySequence::Save));
-  fileSection->addAction(getAction("Save as", QKeySequence("Ctrl+Shift+s")));
+  fileSection->addAction(getAction("Save", QKeySequence::Save, &MainWindow::saveFile));
+  fileSection->addAction(
+    getAction("Save as", QKeySequence("Ctrl+Shift+s"), &MainWindow::saveFileAs));
 
   editSection->addAction(getAction("Undo", QKeySequence::Undo));
   editSection->addAction(getAction("Redo", QKeySequence::Redo));
@@ -132,7 +133,7 @@ void MainWindow::openFile() {
 
 void MainWindow::newFile() { addFileToTabWidget("Untitled"); }
 
-void MainWindow::addFileToTabWidget(const QString &filePath, const QString &fileContent) {
+void MainWindow::addFileToTabWidget(const QString& filePath, const QString& fileContent) {
   if (stackedWidget_->currentWidget() == welcomeWidget_)
     stackedWidget_->setCurrentWidget(tabWidget_);
 
@@ -145,9 +146,46 @@ void MainWindow::addFileToTabWidget(const QString &filePath, const QString &file
     return;
   }
 
-  auto *editor = new EditorWidget(tabWidget_);
+  auto* editor = new EditorWidget(tabWidget_);
   editor->setPlainText(fileContent);
   tabWidget_->addTab(editor, fileName);
   tabWidget_->setTabToolTip(tabWidget_->count() - 1, filePath);
   tabWidget_->setCurrentIndex(tabWidget_->count() - 1);
+}
+void MainWindow::saveFile() {
+  const auto currentFile = dynamic_cast<EditorWidget*>(tabWidget_->currentWidget());
+
+  if (!currentFile || !currentFile->isChanged()) {
+    // maybe print some error?
+    return;
+  }
+
+  executeSavingFile(tabWidget_->tabToolTip(tabWidget_->currentIndex()));
+}
+
+void MainWindow::saveFileAs() {
+  const auto filePath = QFileDialog::getSaveFileName(this, "Save file as");
+
+  if (!filePath.isEmpty()) executeSavingFile(filePath);
+}
+
+void MainWindow::executeSavingFile(const QString& filePath) {
+  QFile file(filePath);
+  if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    //TODO: add error message as qdialog
+    qDebug() << "ERROR: Could not save file: " + file.fileName();
+  }
+
+  QTextStream out(&file);
+  const auto currentFile = dynamic_cast<EditorWidget*>(tabWidget_->currentWidget());
+  out << currentFile->toPlainText();
+}
+
+void MainWindow::closeTab(int index) {
+  tabWidget_->removeTab(index);
+
+  // TODO: add warning when user want to close changed file
+
+  // changing to welcomeWidget when no file is opened
+  if (tabWidget_->count() == 0) stackedWidget_->setCurrentWidget(welcomeWidget_);
 }

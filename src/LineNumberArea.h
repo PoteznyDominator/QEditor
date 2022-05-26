@@ -11,15 +11,15 @@
 class LineNumberArea : public QWidget {
   Q_OBJECT
 public:
-  explicit LineNumberArea(EditorWidget *parent = nullptr);
+  explicit LineNumberArea(EditorWidget* parent = nullptr);
 
   QSize sizeHint() const override;
 
 protected:
-  void paintEvent(QPaintEvent *event) override;
+  void paintEvent(QPaintEvent* event) override;
 
 private:
-  EditorWidget *editorWidget;
+  EditorWidget* editorWidget;
 };
 
 #endif//QEDITIOR_LINENUMBERAREA_H

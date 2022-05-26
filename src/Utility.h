@@ -12,7 +12,7 @@ namespace Utils {
   QString getFileName(const QString& filePath);
 
   int getIndexOfOpenedFile(const QString& filePath, QTabWidget* tabWidget);
-}
+}// namespace Utils
 
 
 #endif//QEDITIOR_UTILITY_H

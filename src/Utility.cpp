@@ -6,11 +6,11 @@
 #include <QFileInfo>
 #include <QTabBar>
 
-QString Utils::getFileName(const QString &filePath) {
+QString Utils::getFileName(const QString& filePath) {
   const QFileInfo info(filePath);
   return info.fileName();
 }
-int Utils::getIndexOfOpenedFile(const QString &filePath, QTabWidget *tabWidget) {
+int Utils::getIndexOfOpenedFile(const QString& filePath, QTabWidget* tabWidget) {
   for (int i = 0; i < tabWidget->count(); i++) {
     if (tabWidget->tabToolTip(i) == filePath) return i;
   }

@@ -27,7 +27,11 @@ private:
 
   void openFile();
   void newFile();
+  void saveFile();
+  void saveFileAs();
+  void executeSavingFile(const QString& filePath);
   void addFileToTabWidget(const QString &filePath, const QString &fileContent = "");
+  void closeTab(int index);
 
   QAction *getAction(const QString &text, QKeySequence shortCut = 0,
                      void (MainWindow::*slot)() = nullptr);

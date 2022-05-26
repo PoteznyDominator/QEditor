@@ -9,7 +9,7 @@
 #include <QTextBlock>
 
 
-EditorWidget::EditorWidget(QWidget *parent) : QPlainTextEdit(parent) {
+EditorWidget::EditorWidget(QWidget* parent) : QPlainTextEdit(parent), isChanged_(false) {
   setWordWrapMode(QTextOption::NoWrap);
 
   lineNumberArea = new LineNumberArea(this);
@@ -17,12 +17,13 @@ EditorWidget::EditorWidget(QWidget *parent) : QPlainTextEdit(parent) {
   connect(this, &EditorWidget::blockCountChanged, this, &EditorWidget::updateLineNumberAreaWidth);
   connect(this, &EditorWidget::updateRequest, this, &EditorWidget::updateLineNumberArea);
   connect(this, &EditorWidget::cursorPositionChanged, this, &EditorWidget::highlightCurrentLine);
+  connect(this, &EditorWidget::textChanged, this, [this] { isChanged_ = true; });
 
   updateLineNumberAreaWidth(0);
   highlightCurrentLine();
 }
 
-void EditorWidget::lineNumberAreaPaintEvent(QPaintEvent *event) {
+void EditorWidget::lineNumberAreaPaintEvent(QPaintEvent* event) {
   QPainter painter(lineNumberArea);
   painter.fillRect(event->rect(), Qt::lightGray);
   QTextBlock block = firstVisibleBlock();
@@ -57,7 +58,7 @@ int EditorWidget::lineNumberAreaWidth() {
   return space;
 }
 
-void EditorWidget::resizeEvent(QResizeEvent *e) {
+void EditorWidget::resizeEvent(QResizeEvent* e) {
   QPlainTextEdit::resizeEvent(e);
 
   QRect cr = contentsRect();
@@ -86,10 +87,11 @@ void EditorWidget::highlightCurrentLine() {
   setExtraSelections(extraSelections);
 }
 
-void EditorWidget::updateLineNumberArea(const QRect &rect, int dy) {
+void EditorWidget::updateLineNumberArea(const QRect& rect, int dy) {
   if (dy) lineNumberArea->scroll(0, dy);
   else
     lineNumberArea->update(0, rect.y(), lineNumberArea->width(), rect.height());
 
   if (rect.contains(viewport()->rect())) updateLineNumberAreaWidth(0);
 }
+bool EditorWidget::isChanged() const { return isChanged_; }

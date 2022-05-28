@@ -24,6 +24,7 @@ private:
   void initWelcomeWidget();
   void initTabWidget();
   void initMenuBar();
+  void initStyleSheet();
 
   void openFile();
   void newFile();

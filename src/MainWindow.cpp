@@ -5,6 +5,7 @@
 #include "MainWindow.h"
 #include "EditorWidget.h"
 #include "Utility.h"
+#include "msg.h"
 #include <QAction>
 #include <QBoxLayout>
 #include <QDebug>
@@ -18,6 +19,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   setCentralWidget(new QWidget);
   initUI();
   initMenuBar();
+  initStyleSheet();
 }
 
 void MainWindow::initUI() {
@@ -113,14 +115,21 @@ void MainWindow::initMenuBar() {
   setMenuBar(menuBar);
 }
 
+void MainWindow::initStyleSheet() {
+  QFile file("../style/style.css");
+  file.open(QFile::ReadOnly);
+  QString styleSheet = QLatin1String(file.readAll());
+
+  setStyleSheet(styleSheet);
+}
+
 void MainWindow::openFile() {
   auto filePath = QFileDialog::getOpenFileName(this, "Open file");
   if (!filePath.isEmpty()) {
     QFile file(filePath);
     // check if file can be opened
     if (!file.open(QIODevice::Text | QIODevice::ReadOnly)) {
-      //TODO: add error message as qdialog
-      qDebug() << "ERROR: Could not open file: " + filePath;
+      Msg::ERROR(QString("Could not open file: \"%1\"").arg(filePath), this);
     }
 
     QTextStream in(&file);
@@ -132,7 +141,6 @@ void MainWindow::openFile() {
 }
 
 void MainWindow::newFile() { addFileToTabWidget("Untitled"); }
-
 void MainWindow::addFileToTabWidget(const QString& filePath, const QString& fileContent) {
   if (stackedWidget_->currentWidget() == welcomeWidget_)
     stackedWidget_->setCurrentWidget(tabWidget_);
@@ -152,6 +160,7 @@ void MainWindow::addFileToTabWidget(const QString& filePath, const QString& file
   tabWidget_->setTabToolTip(tabWidget_->count() - 1, filePath);
   tabWidget_->setCurrentIndex(tabWidget_->count() - 1);
 }
+
 void MainWindow::saveFile() {
   const auto currentFile = dynamic_cast<EditorWidget*>(tabWidget_->currentWidget());
 
@@ -172,15 +181,13 @@ void MainWindow::saveFileAs() {
 void MainWindow::executeSavingFile(const QString& filePath) {
   QFile file(filePath);
   if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-    //TODO: add error message as qdialog
-    qDebug() << "ERROR: Could not save file: " + file.fileName();
+    Msg::ERROR(QString("Could not save file: \"%1\"").arg(file.fileName()), this);
   }
 
   QTextStream out(&file);
   const auto currentFile = dynamic_cast<EditorWidget*>(tabWidget_->currentWidget());
   out << currentFile->toPlainText();
 }
-
 void MainWindow::closeTab(int index) {
   tabWidget_->removeTab(index);
 

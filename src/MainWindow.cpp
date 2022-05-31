@@ -13,9 +13,10 @@
 #include <QLabel>
 #include <QMenuBar>
 #include <QPushButton>
-#include <QSplitter>
 
-MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
+MainWindow::MainWindow(QWidget* parent)
+    : QMainWindow(parent), stackedWidget_(nullptr), tabWidget_(nullptr), sideBar_(nullptr),
+      welcomeWidget_(nullptr), splitter_(nullptr) {
   setCentralWidget(new QWidget);
   initUI();
   initMenuBar();
@@ -26,9 +27,8 @@ void MainWindow::initUI() {
   setMinimumSize(800, 600);
 
   auto* layout = new QBoxLayout(QBoxLayout::TopToBottom);
-  auto* splitter = new QSplitter(this);
+  splitter_ = new QSplitter(this);
 
-  treeWidget_ = new QTreeWidget;
   stackedWidget_ = new QStackedWidget;
 
   initWelcomeWidget();
@@ -38,14 +38,10 @@ void MainWindow::initUI() {
   stackedWidget_->addWidget(tabWidget_);
   stackedWidget_->setCurrentWidget(welcomeWidget_);
 
-  splitter->addWidget(treeWidget_);
-  splitter->addWidget(stackedWidget_);
-  splitter->setOrientation(Qt::Horizontal);
-  splitter->setCollapsible(0, true);
-  treeWidget_->setMinimumWidth(100);
+  splitter_->addWidget(stackedWidget_);
+  splitter_->setOrientation(Qt::Horizontal);
 
-  layout->addWidget(splitter);
-
+  layout->addWidget(splitter_);
   centralWidget()->setLayout(layout);
 }
 
@@ -76,14 +72,10 @@ void MainWindow::initTabWidget() {
   tabWidget_->setTabsClosable(true);
   connect(tabWidget_, &QTabWidget::tabCloseRequested, this, &MainWindow::closeTab);
 }
-QAction* MainWindow::getAction(const QString& text, QKeySequence shortCut,
-                               void (MainWindow::*slot)()) {
-  auto* action = new QAction(text, this);
-  // skipping shortcut if doesn't exist
-  if (!shortCut.isEmpty()) action->setShortcut(shortCut);
-  // connecting function to action
-  if (slot) connect(action, &QAction::triggered, this, slot);
-  return action;
+
+void MainWindow::initSideBar() {
+  sideBar_ = new QTreeWidget(splitter_);
+  sideBar_->setMinimumWidth(100);
 }
 
 void MainWindow::initMenuBar() {
@@ -92,23 +84,27 @@ void MainWindow::initMenuBar() {
   auto* fileSection = new QMenu("&File");
   auto* editSection = new QMenu("&Edit");
   auto* optionsSection = new QMenu("&Options");
+  auto* viewSection = new QMenu("&View");
   auto* helpSection = new QMenu("&Help");
 
-  fileSection->addAction(getAction("New", QKeySequence::New, &MainWindow::newFile));
-  fileSection->addAction(getAction("Open", QKeySequence::Open, &MainWindow::openFile));
-  fileSection->addAction(getAction("Save", QKeySequence::Save, &MainWindow::saveFile));
+  fileSection->addAction(createAction("New", &MainWindow::newFile, QKeySequence::New));
+  fileSection->addAction(createAction("Open", &MainWindow::openFile, QKeySequence::Open));
+  fileSection->addAction(createAction("Save", &MainWindow::saveFile, QKeySequence::Save));
   fileSection->addAction(
-    getAction("Save as", QKeySequence("Ctrl+Shift+s"), &MainWindow::saveFileAs));
+    createAction("Save as", &MainWindow::saveFileAs, QKeySequence("Ctrl+Shift+s")));
 
-  editSection->addAction(getAction("Undo", QKeySequence::Undo));
-  editSection->addAction(getAction("Redo", QKeySequence::Redo));
-  editSection->addAction(getAction("Cut", QKeySequence::Cut));
-  editSection->addAction(getAction("Copy", QKeySequence::Copy));
-  editSection->addAction(getAction("Paste", QKeySequence::Paste));
-  editSection->addAction(getAction("Find", QKeySequence::Find));
+  editSection->addAction(createAction("Undo", QKeySequence::Undo));
+  editSection->addAction(createAction("Redo", QKeySequence::Redo));
+  editSection->addAction(createAction("Cut", QKeySequence::Cut));
+  editSection->addAction(createAction("Copy", QKeySequence::Copy));
+  editSection->addAction(createAction("Paste", QKeySequence::Paste));
+  editSection->addAction(createAction("Find", QKeySequence::Find));
+
+  viewSection->addAction(createAction("Show side bar", &MainWindow::showSideBar, true));
 
   menuBar->addMenu(fileSection);
   menuBar->addMenu(editSection);
+  menuBar->addMenu(viewSection);
   menuBar->addMenu(optionsSection);
   menuBar->addMenu(helpSection);
 
@@ -141,6 +137,7 @@ void MainWindow::openFile() {
 }
 
 void MainWindow::newFile() { addFileToTabWidget("Untitled"); }
+
 void MainWindow::addFileToTabWidget(const QString& filePath, const QString& fileContent) {
   if (stackedWidget_->currentWidget() == welcomeWidget_)
     stackedWidget_->setCurrentWidget(tabWidget_);
@@ -160,7 +157,6 @@ void MainWindow::addFileToTabWidget(const QString& filePath, const QString& file
   tabWidget_->setTabToolTip(tabWidget_->count() - 1, filePath);
   tabWidget_->setCurrentIndex(tabWidget_->count() - 1);
 }
-
 void MainWindow::saveFile() {
   const auto currentFile = dynamic_cast<EditorWidget*>(tabWidget_->currentWidget());
 
@@ -171,7 +167,6 @@ void MainWindow::saveFile() {
 
   executeSavingFile(tabWidget_->tabToolTip(tabWidget_->currentIndex()));
 }
-
 void MainWindow::saveFileAs() {
   const auto filePath = QFileDialog::getSaveFileName(this, "Save file as");
 
@@ -188,6 +183,7 @@ void MainWindow::executeSavingFile(const QString& filePath) {
   const auto currentFile = dynamic_cast<EditorWidget*>(tabWidget_->currentWidget());
   out << currentFile->toPlainText();
 }
+
 void MainWindow::closeTab(int index) {
   tabWidget_->removeTab(index);
 
@@ -195,4 +191,46 @@ void MainWindow::closeTab(int index) {
 
   // changing to welcomeWidget when no file is opened
   if (tabWidget_->count() == 0) stackedWidget_->setCurrentWidget(welcomeWidget_);
+}
+
+QAction* MainWindow::createAction(const QString& text, const QKeySequence& shortCut) {
+  if (text.isEmpty()) return nullptr;
+
+  auto* action = new QAction(text, this);
+  if (!shortCut.isEmpty()) action->setShortcut(shortCut);
+
+  return action;
+}
+
+QAction* MainWindow::createAction(const QString& text, void (MainWindow::*slot)(),
+                                  const QKeySequence& shortCut) {
+  auto* action = createAction(text, shortCut);
+  if (!action) return nullptr;
+
+  if (slot) connect(action, &QAction::triggered, this, slot);
+  return action;
+}
+
+QAction* MainWindow::createAction(const QString& text, void (MainWindow::*slot)(bool), bool checked,
+                                  const QKeySequence& shortCut) {
+  auto* action = createAction(text, shortCut);
+  if (!action) return nullptr;
+
+  if (checked) {
+    action->setCheckable(true);
+    connect(action, &QAction::toggled, this, slot);
+  }
+
+  return action;
+}
+
+void MainWindow::showSideBar(bool checked) {
+  if (!sideBar_ && checked) { initSideBar(); }
+
+  if (checked) {
+    splitter_->insertWidget(0, sideBar_);
+    return;
+  }
+
+  splitter_->widget(0)->hide();
 }

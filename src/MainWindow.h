@@ -7,7 +7,7 @@
 
 #include <QMainWindow>
 #include <QStackedWidget>
-#include <QTreeWidget>
+#include <QTreeView>
 #include <QSplitter>
 
 class MainWindow : public QMainWindow {
@@ -18,7 +18,7 @@ public:
 private:
   QStackedWidget* stackedWidget_;
   QTabWidget* tabWidget_;
-  QTreeWidget* sideBar_;
+  QTreeView* sideBar_;
   QWidget* welcomeWidget_;
   QSplitter* splitter_;
 

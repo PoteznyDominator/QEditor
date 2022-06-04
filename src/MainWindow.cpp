@@ -13,6 +13,7 @@
 #include <QLabel>
 #include <QMenuBar>
 #include <QPushButton>
+#include <QFileSystemModel>
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), stackedWidget_(nullptr), tabWidget_(nullptr), sideBar_(nullptr),
@@ -74,8 +75,24 @@ void MainWindow::initTabWidget() {
 }
 
 void MainWindow::initSideBar() {
-  sideBar_ = new QTreeWidget(splitter_);
-  sideBar_->setMinimumWidth(100);
+  sideBar_ = new QTreeView(splitter_);
+  sideBar_->setMinimumWidth(50);
+
+  auto model = new QFileSystemModel(this);
+  sideBar_->setModel(model);
+  sideBar_->setRootIndex(model->setRootPath(QDir::currentPath()));
+  sideBar_->setHeaderHidden(true);
+  // hiding unneeded columns
+  // leaving only name of file/directory
+  sideBar_->hideColumn(1);
+  sideBar_->hideColumn(2);
+  sideBar_->hideColumn(3);
+
+  // setting splitter with new widget
+  splitter_->insertWidget(0, sideBar_);
+  splitter_->setCollapsible(0, false);
+  // by default this should always open sidebar with 150 width
+  splitter_->setSizes(QList<int>{150, tabWidget_->width() - 150});
 }
 
 void MainWindow::initMenuBar() {
@@ -225,10 +242,14 @@ QAction* MainWindow::createAction(const QString& text, void (MainWindow::*slot)(
 }
 
 void MainWindow::showSideBar(bool checked) {
-  if (!sideBar_ && checked) { initSideBar(); }
 
   if (checked) {
-    splitter_->insertWidget(0, sideBar_);
+    if (!sideBar_) {
+      initSideBar();
+      return;
+    }
+
+    splitter_->widget(0)->show();
     return;
   }
 

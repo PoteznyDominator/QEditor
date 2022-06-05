@@ -28,9 +28,15 @@ Msg::Msg(const QString& message, Msg::Type type, QWidget* parent) {
   exec();
 }
 
-void Msg::ERROR(const QString& message, QWidget* parent) { Msg(message, Msg::Type::Error, parent); }
-void Msg::WARN(const QString& message, QWidget* parent) { Msg(message, Msg::Type::Warn, parent); }
-void Msg::INFO(const QString& message, QWidget* parent) { Msg(message, Msg::Type::Info, parent); }
+void Msg::ERROR(const QString& message, QWidget* parent) {
+  Msg(message, Msg::Type::Error, parent);
+}
+void Msg::WARN(const QString& message, QWidget* parent) {
+  Msg(message, Msg::Type::Warn, parent);
+}
+void Msg::INFO(const QString& message, QWidget* parent) {
+  Msg(message, Msg::Type::Info, parent);
+}
 
 void Msg::resizeEvent(QResizeEvent* event) {
   QMessageBox::resizeEvent(event);

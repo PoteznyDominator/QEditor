@@ -5,10 +5,11 @@
 #ifndef QEDITIOR_MAINWINDOW_H
 #define QEDITIOR_MAINWINDOW_H
 
+#include "SideBar.h"
 #include <QMainWindow>
+#include <QSplitter>
 #include <QStackedWidget>
 #include <QTreeView>
-#include <QSplitter>
 
 class MainWindow : public QMainWindow {
   Q_OBJECT
@@ -18,7 +19,7 @@ public:
 private:
   QStackedWidget* stackedWidget_;
   QTabWidget* tabWidget_;
-  QTreeView* sideBar_;
+  SideBar* sideBar_;
   QWidget* welcomeWidget_;
   QSplitter* splitter_;
 
@@ -30,11 +31,13 @@ private:
   void initStyleSheet();
 
   void openFile();
+  void openFile(const QString& filePath);
   void newFile();
   void saveFile();
   void saveFileAs();
   void executeSavingFile(const QString& filePath);
-  void addFileToTabWidget(const QString& filePath, const QString& fileContent = "");
+  void addFileToTabWidget(const QString& filePath,
+                          const QString& fileContent = "");
   void closeTab(int index);
 
   void showSideBar(bool checked);

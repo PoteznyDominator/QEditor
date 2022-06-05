@@ -10,14 +10,14 @@
 #include <QBoxLayout>
 #include <QDebug>
 #include <QFileDialog>
+#include <QFileSystemModel>
 #include <QLabel>
 #include <QMenuBar>
 #include <QPushButton>
-#include <QFileSystemModel>
 
 MainWindow::MainWindow(QWidget* parent)
-    : QMainWindow(parent), stackedWidget_(nullptr), tabWidget_(nullptr), sideBar_(nullptr),
-      welcomeWidget_(nullptr), splitter_(nullptr) {
+    : QMainWindow(parent), stackedWidget_(nullptr), tabWidget_(nullptr),
+      sideBar_(nullptr), welcomeWidget_(nullptr), splitter_(nullptr) {
   setCentralWidget(new QWidget);
   initUI();
   initMenuBar();
@@ -55,7 +55,8 @@ void MainWindow::initWelcomeWidget() {
   auto* welcomeLabel = new QLabel("Welcome to QEditor ;)");
   welcomeLabel->setAlignment(Qt::AlignCenter);
 
-  connect(openFileBtn, &QPushButton::clicked, this, &MainWindow::openFile);
+  connect(openFileBtn, &QPushButton::clicked, this,
+          qOverload<>(&MainWindow::openFile));
   connect(newFileBtn, &QPushButton::clicked, this, &MainWindow::newFile);
 
   layout->addStretch();
@@ -71,22 +72,14 @@ void MainWindow::initTabWidget() {
   tabWidget_ = new QTabWidget;
   tabWidget_->setMovable(true);
   tabWidget_->setTabsClosable(true);
-  connect(tabWidget_, &QTabWidget::tabCloseRequested, this, &MainWindow::closeTab);
+  connect(tabWidget_, &QTabWidget::tabCloseRequested, this,
+          &MainWindow::closeTab);
 }
 
 void MainWindow::initSideBar() {
-  sideBar_ = new QTreeView(splitter_);
-  sideBar_->setMinimumWidth(50);
-
-  auto model = new QFileSystemModel(this);
-  sideBar_->setModel(model);
-  sideBar_->setRootIndex(model->setRootPath(QDir::currentPath()));
-  sideBar_->setHeaderHidden(true);
-  // hiding unneeded columns
-  // leaving only name of file/directory
-  sideBar_->hideColumn(1);
-  sideBar_->hideColumn(2);
-  sideBar_->hideColumn(3);
+  sideBar_ = new SideBar(QDir::currentPath(), splitter_);
+  connect(sideBar_, &SideBar::fileDoubleClick, this,
+          qOverload<const QString&>(&MainWindow::openFile));
 
   // setting splitter with new widget
   splitter_->insertWidget(0, sideBar_);
@@ -104,11 +97,14 @@ void MainWindow::initMenuBar() {
   auto* viewSection = new QMenu("&View");
   auto* helpSection = new QMenu("&Help");
 
-  fileSection->addAction(createAction("New", &MainWindow::newFile, QKeySequence::New));
-  fileSection->addAction(createAction("Open", &MainWindow::openFile, QKeySequence::Open));
-  fileSection->addAction(createAction("Save", &MainWindow::saveFile, QKeySequence::Save));
   fileSection->addAction(
-    createAction("Save as", &MainWindow::saveFileAs, QKeySequence("Ctrl+Shift+s")));
+    createAction("New", &MainWindow::newFile, QKeySequence::New));
+  fileSection->addAction(
+    createAction("Open", &MainWindow::openFile, QKeySequence::Open));
+  fileSection->addAction(
+    createAction("Save", &MainWindow::saveFile, QKeySequence::Save));
+  fileSection->addAction(createAction("Save as", &MainWindow::saveFileAs,
+                                      QKeySequence("Ctrl+Shift+s")));
 
   editSection->addAction(createAction("Undo", QKeySequence::Undo));
   editSection->addAction(createAction("Redo", QKeySequence::Redo));
@@ -117,7 +113,8 @@ void MainWindow::initMenuBar() {
   editSection->addAction(createAction("Paste", QKeySequence::Paste));
   editSection->addAction(createAction("Find", QKeySequence::Find));
 
-  viewSection->addAction(createAction("Show side bar", &MainWindow::showSideBar, true));
+  viewSection->addAction(
+    createAction("Show side bar", &MainWindow::showSideBar, true));
 
   menuBar->addMenu(fileSection);
   menuBar->addMenu(editSection);
@@ -138,24 +135,26 @@ void MainWindow::initStyleSheet() {
 
 void MainWindow::openFile() {
   auto filePath = QFileDialog::getOpenFileName(this, "Open file");
-  if (!filePath.isEmpty()) {
-    QFile file(filePath);
-    // check if file can be opened
-    if (!file.open(QIODevice::Text | QIODevice::ReadOnly)) {
-      Msg::ERROR(QString("Could not open file: \"%1\"").arg(filePath), this);
-    }
-
-    QTextStream in(&file);
-    auto content = in.readAll();
-    file.close();
-
-    addFileToTabWidget(filePath, content);
+  openFile(filePath);
+}
+// overload function that opens file
+void MainWindow::openFile(const QString& filePath) {
+  QFile file(filePath);
+  // check if file can be opened
+  if (!file.open(QIODevice::Text | QIODevice::ReadOnly)) {
+    Msg::ERROR(QString("Could not open file: \"%1\"").arg(filePath), this);
   }
+
+  QTextStream in(&file);
+  auto content = in.readAll();
+  file.close();
+
+  addFileToTabWidget(filePath, content);
 }
 
 void MainWindow::newFile() { addFileToTabWidget("Untitled"); }
-
-void MainWindow::addFileToTabWidget(const QString& filePath, const QString& fileContent) {
+void MainWindow::addFileToTabWidget(const QString& filePath,
+                                    const QString& fileContent) {
   if (stackedWidget_->currentWidget() == welcomeWidget_)
     stackedWidget_->setCurrentWidget(tabWidget_);
 
@@ -175,7 +174,8 @@ void MainWindow::addFileToTabWidget(const QString& filePath, const QString& file
   tabWidget_->setCurrentIndex(tabWidget_->count() - 1);
 }
 void MainWindow::saveFile() {
-  const auto currentFile = dynamic_cast<EditorWidget*>(tabWidget_->currentWidget());
+  const auto currentFile =
+    dynamic_cast<EditorWidget*>(tabWidget_->currentWidget());
 
   if (!currentFile || !currentFile->isChanged()) {
     // maybe print some error?
@@ -184,6 +184,7 @@ void MainWindow::saveFile() {
 
   executeSavingFile(tabWidget_->tabToolTip(tabWidget_->currentIndex()));
 }
+
 void MainWindow::saveFileAs() {
   const auto filePath = QFileDialog::getSaveFileName(this, "Save file as");
 
@@ -193,11 +194,13 @@ void MainWindow::saveFileAs() {
 void MainWindow::executeSavingFile(const QString& filePath) {
   QFile file(filePath);
   if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-    Msg::ERROR(QString("Could not save file: \"%1\"").arg(file.fileName()), this);
+    Msg::ERROR(QString("Could not save file: \"%1\"").arg(file.fileName()),
+               this);
   }
 
   QTextStream out(&file);
-  const auto currentFile = dynamic_cast<EditorWidget*>(tabWidget_->currentWidget());
+  const auto currentFile =
+    dynamic_cast<EditorWidget*>(tabWidget_->currentWidget());
   out << currentFile->toPlainText();
 }
 
@@ -207,10 +210,12 @@ void MainWindow::closeTab(int index) {
   // TODO: add warning when user want to close changed file
 
   // changing to welcomeWidget when no file is opened
-  if (tabWidget_->count() == 0) stackedWidget_->setCurrentWidget(welcomeWidget_);
+  if (tabWidget_->count() == 0)
+    stackedWidget_->setCurrentWidget(welcomeWidget_);
 }
 
-QAction* MainWindow::createAction(const QString& text, const QKeySequence& shortCut) {
+QAction* MainWindow::createAction(const QString& text,
+                                  const QKeySequence& shortCut) {
   if (text.isEmpty()) return nullptr;
 
   auto* action = new QAction(text, this);
@@ -219,7 +224,8 @@ QAction* MainWindow::createAction(const QString& text, const QKeySequence& short
   return action;
 }
 
-QAction* MainWindow::createAction(const QString& text, void (MainWindow::*slot)(),
+QAction* MainWindow::createAction(const QString& text,
+                                  void (MainWindow::*slot)(),
                                   const QKeySequence& shortCut) {
   auto* action = createAction(text, shortCut);
   if (!action) return nullptr;
@@ -228,7 +234,8 @@ QAction* MainWindow::createAction(const QString& text, void (MainWindow::*slot)(
   return action;
 }
 
-QAction* MainWindow::createAction(const QString& text, void (MainWindow::*slot)(bool), bool checked,
+QAction* MainWindow::createAction(const QString& text,
+                                  void (MainWindow::*slot)(bool), bool checked,
                                   const QKeySequence& shortCut) {
   auto* action = createAction(text, shortCut);
   if (!action) return nullptr;
@@ -240,7 +247,6 @@ QAction* MainWindow::createAction(const QString& text, void (MainWindow::*slot)(
 
   return action;
 }
-
 void MainWindow::showSideBar(bool checked) {
 
   if (checked) {

@@ -9,15 +9,20 @@
 #include <QTextBlock>
 
 
-EditorWidget::EditorWidget(QWidget* parent) : QPlainTextEdit(parent), isChanged_(false) {
+EditorWidget::EditorWidget(QWidget* parent)
+    : QPlainTextEdit(parent), isChanged_(false) {
   setWordWrapMode(QTextOption::NoWrap);
 
   lineNumberArea = new LineNumberArea(this);
   //  connecting usefully signal for the linenumberarea
-  connect(this, &EditorWidget::blockCountChanged, this, &EditorWidget::updateLineNumberAreaWidth);
-  connect(this, &EditorWidget::updateRequest, this, &EditorWidget::updateLineNumberArea);
-  connect(this, &EditorWidget::cursorPositionChanged, this, &EditorWidget::highlightCurrentLine);
-  connect(this, &EditorWidget::textChanged, this, [this] { isChanged_ = true; });
+  connect(this, &EditorWidget::blockCountChanged, this,
+          &EditorWidget::updateLineNumberAreaWidth);
+  connect(this, &EditorWidget::updateRequest, this,
+          &EditorWidget::updateLineNumberArea);
+  connect(this, &EditorWidget::cursorPositionChanged, this,
+          &EditorWidget::highlightCurrentLine);
+  connect(this, &EditorWidget::textChanged, this,
+          [this] { isChanged_ = true; });
 
   updateLineNumberAreaWidth(0);
   highlightCurrentLine();
@@ -28,14 +33,15 @@ void EditorWidget::lineNumberAreaPaintEvent(QPaintEvent* event) {
   painter.fillRect(event->rect(), Qt::lightGray);
   QTextBlock block = firstVisibleBlock();
   int blockNumber = block.blockNumber();
-  int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
+  int top =
+    qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
   int bottom = top + qRound(blockBoundingRect(block).height());
   while (block.isValid() && top <= event->rect().bottom()) {
     if (block.isVisible() && bottom >= event->rect().top()) {
       QString number = QString::number(blockNumber + 1);
       painter.setPen(Qt::black);
-      painter.drawText(0, top, lineNumberArea->width(), fontMetrics().height(), Qt::AlignRight,
-                       number);
+      painter.drawText(0, top, lineNumberArea->width(), fontMetrics().height(),
+                       Qt::AlignRight, number);
     }
 
     block = block.next();
@@ -62,7 +68,8 @@ void EditorWidget::resizeEvent(QResizeEvent* e) {
   QPlainTextEdit::resizeEvent(e);
 
   QRect cr = contentsRect();
-  lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
+  lineNumberArea->setGeometry(
+    QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
 }
 
 void EditorWidget::updateLineNumberAreaWidth(int newBlockCount) {

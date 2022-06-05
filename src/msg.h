@@ -21,7 +21,8 @@ private:
     Warn,
   };
 
-  explicit Msg(const QString& message, Msg::Type type, QWidget* parent = nullptr);
+  explicit Msg(const QString& message, Msg::Type type,
+               QWidget* parent = nullptr);
   void resizeEvent(QResizeEvent* event) override;
   void showEvent(QShowEvent* event) override;
 };

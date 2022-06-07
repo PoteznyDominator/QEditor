@@ -2,7 +2,7 @@
 // Created by PoteznyDominator on 04/06/2022.
 //
 
-#include "SideBar.h"
+#include "../header/SideBar.h"
 #include <QDebug>
 
 SideBar::SideBar(const QString& rootPath, QWidget* parent) : QTreeView(parent) {

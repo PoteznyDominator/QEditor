@@ -2,8 +2,8 @@
 // Created by PoteznyDominator on 22.05.2022.
 //
 
-#include "EditorWidget.h"
-#include "LineNumberArea.h"
+#include "../header/EditorWidget.h"
+#include "../header/LineNumberArea.h"
 #include <QPainter>
 #include <QPlainTextEdit>
 #include <QTextBlock>

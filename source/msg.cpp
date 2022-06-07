@@ -2,7 +2,7 @@
 // Created by PoteznyDominator on 28/05/2022.
 //
 
-#include "msg.h"
+#include "../header/msg.h"
 Msg::Msg(const QString& message, Msg::Type type, QWidget* parent) {
   setText(message);
   switch (type) {

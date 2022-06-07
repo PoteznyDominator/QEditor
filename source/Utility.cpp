@@ -2,7 +2,7 @@
 // Created by PoteznyDominator on 23.05.2022.
 //
 
-#include "Utility.h"
+#include "../header/Utility.h"
 #include <QFileInfo>
 #include <QTabBar>
 

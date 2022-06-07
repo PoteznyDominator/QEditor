@@ -2,10 +2,10 @@
 // Created by PoteznyDominator on 22.05.2022.
 //
 
-#include "MainWindow.h"
-#include "EditorWidget.h"
-#include "Utility.h"
-#include "msg.h"
+#include "../header/MainWindow.h"
+#include "../header/EditorWidget.h"
+#include "../header/Utility.h"
+#include "../header/msg.h"
 #include <QAction>
 #include <QBoxLayout>
 #include <QDebug>
@@ -135,7 +135,7 @@ void MainWindow::initStyleSheet() {
 
 void MainWindow::openFile() {
   auto filePath = QFileDialog::getOpenFileName(this, "Open file");
-  openFile(filePath);
+  if (!filePath.isEmpty()) openFile(filePath);
 }
 // overload function that opens file
 void MainWindow::openFile(const QString& filePath) {

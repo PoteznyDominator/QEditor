@@ -2,7 +2,7 @@
 // Created by PoteznyDominator on 22.05.2022.
 //
 
-#include "LineNumberArea.h"
+#include "../header/LineNumberArea.h"
 
 LineNumberArea::LineNumberArea(EditorWidget* parent)
     : QWidget(parent), editorWidget(parent) {}

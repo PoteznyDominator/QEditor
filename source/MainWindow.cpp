@@ -21,7 +21,6 @@ MainWindow::MainWindow(QWidget* parent)
   setCentralWidget(new QWidget);
   initUI();
   initMenuBar();
-  initStyleSheet();
 }
 
 void MainWindow::initUI() {
@@ -123,14 +122,6 @@ void MainWindow::initMenuBar() {
   menuBar->addMenu(helpSection);
 
   setMenuBar(menuBar);
-}
-
-void MainWindow::initStyleSheet() {
-  QFile file("../style/style.css");
-  file.open(QFile::ReadOnly);
-  QString styleSheet = QLatin1String(file.readAll());
-
-  setStyleSheet(styleSheet);
 }
 
 void MainWindow::openFile() {

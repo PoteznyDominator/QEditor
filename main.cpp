@@ -8,7 +8,7 @@ int main(int argc, char *argv[]) {
   QApplication app(argc, argv);
   auto* mainWindow = new MainWindow();
 
-  QFile file(":/style/resources/style.css");
+  QFile file(":/style/style.css");
   if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
     Msg::ERROR("Could not opened stylesheet", mainWindow);
   }

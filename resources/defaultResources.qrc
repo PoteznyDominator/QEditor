@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/style">
+        <file>style.css</file>
+    </qresource>
+    <qresource prefix="/images">
+        <file>close-tab.png</file>
+    </qresource>
+</RCC>

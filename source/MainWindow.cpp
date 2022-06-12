@@ -14,11 +14,13 @@
 #include <QLabel>
 #include <QMenuBar>
 #include <QPushButton>
+#include <QToolButton>
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), stackedWidget_(nullptr), tabWidget_(nullptr),
       sideBar_(nullptr), welcomeWidget_(nullptr), splitter_(nullptr) {
-  setCentralWidget(new QWidget);
+  setCentralWidget(new QWidget(this));
+  layout()->setContentsMargins(0, 0, 0, 0);
   initUI();
   initMenuBar();
 }
@@ -42,17 +44,23 @@ void MainWindow::initUI() {
   splitter_->setOrientation(Qt::Horizontal);
 
   layout->addWidget(splitter_);
+  layout->setContentsMargins(0, 0, 0, 0);
   centralWidget()->setLayout(layout);
 }
 
 void MainWindow::initWelcomeWidget() {
   welcomeWidget_ = new QWidget;
+  welcomeWidget_->setObjectName("WelcomeWidget");
 
-  auto* layout = new QBoxLayout(QBoxLayout::TopToBottom);
-  auto* newFileBtn = new QPushButton("New file");
-  auto* openFileBtn = new QPushButton("Open file");
+  auto* layout = new QVBoxLayout();
+  layout->setAlignment(Qt::AlignHCenter);
+  auto* newFileBtn = new QPushButton("New file" ,welcomeWidget_);
+  auto* openFileBtn = new QPushButton("Open file", welcomeWidget_);
   auto* welcomeLabel = new QLabel("Welcome to QEditor ;)");
-  welcomeLabel->setAlignment(Qt::AlignCenter);
+  welcomeLabel->setObjectName("WelcomeLabel");
+
+  newFileBtn->setCursor(Qt::PointingHandCursor);
+  openFileBtn->setCursor(Qt::PointingHandCursor);
 
   connect(openFileBtn, &QPushButton::clicked, this,
           qOverload<>(&MainWindow::openFile));

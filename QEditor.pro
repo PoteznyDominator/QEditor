@@ -23,4 +23,6 @@ SOURCES = \
    $$PWD/main.cpp
 
 RESOURCES += \
-    defaultResources.qrc
+    resources/defaultResources.qrc
+
+FORMS +=

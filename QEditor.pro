@@ -22,8 +22,7 @@ SOURCES = \
    $$PWD/source/Utility.cpp \
    $$PWD/main.cpp
 
-INCLUDEPATH = \
-    $$PWD/src
+RESOURCES += \
+    resources/defaultResources.qrc
 
-#DEFINES = 
-
+FORMS +=

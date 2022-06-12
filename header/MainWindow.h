@@ -28,7 +28,6 @@ private:
   void initTabWidget();
   void initSideBar();
   void initMenuBar();
-  void initStyleSheet();
 
   void openFile();
   void openFile(const QString& filePath);

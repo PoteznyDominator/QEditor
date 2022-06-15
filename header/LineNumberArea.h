@@ -14,6 +14,8 @@ public:
   explicit LineNumberArea(EditorWidget* parent = nullptr);
 
   QSize sizeHint() const override;
+  void zoomIn(QFont font);
+  void zoomOut(QFont font);
 
 protected:
   void paintEvent(QPaintEvent* event) override;

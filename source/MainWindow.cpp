@@ -54,7 +54,7 @@ void MainWindow::initWelcomeWidget() {
 
   auto* layout = new QVBoxLayout();
   layout->setAlignment(Qt::AlignHCenter);
-  auto* newFileBtn = new QPushButton("New file" ,welcomeWidget_);
+  auto* newFileBtn = new QPushButton("New file", welcomeWidget_);
   auto* openFileBtn = new QPushButton("Open file", welcomeWidget_);
   auto* welcomeLabel = new QLabel("Welcome to QEditor ;)");
   welcomeLabel->setObjectName("WelcomeLabel");
@@ -119,6 +119,11 @@ void MainWindow::initMenuBar() {
   editSection->addAction(createAction("Copy", QKeySequence::Copy));
   editSection->addAction(createAction("Paste", QKeySequence::Paste));
   editSection->addAction(createAction("Find", QKeySequence::Find));
+  editSection->addAction(
+    createAction("Zoom in", &MainWindow::zoomIn, QKeySequence::ZoomIn));
+
+  editSection->addAction(
+    createAction("Zoom out", &MainWindow::zoomOut, QKeySequence::ZoomOut));
 
   viewSection->addAction(
     createAction("Show side bar", &MainWindow::showSideBar, true));
@@ -168,6 +173,9 @@ void MainWindow::addFileToTabWidget(const QString& filePath,
 
   auto* editor = new EditorWidget(tabWidget_);
   editor->setPlainText(fileContent);
+  connect(editor, &EditorWidget::zoomInSignal, this, &MainWindow::zoomIn);
+  connect(editor, &EditorWidget::zoomOutSignal, this, &MainWindow::zoomOut);
+
   tabWidget_->addTab(editor, fileName);
   tabWidget_->setTabToolTip(tabWidget_->count() - 1, filePath);
   tabWidget_->setCurrentIndex(tabWidget_->count() - 1);
@@ -188,6 +196,18 @@ void MainWindow::saveFileAs() {
   const auto filePath = QFileDialog::getSaveFileName(this, "Save file as");
 
   if (!filePath.isEmpty()) executeSavingFile(filePath);
+}
+
+void MainWindow::zoomIn() {
+  QList<EditorWidget*> filesList = tabWidget_->findChildren<EditorWidget*>();
+
+  foreach (auto& tab, filesList) { tab->zoomIn(1); }
+}
+
+void MainWindow::zoomOut() {
+  QList<EditorWidget*> filesList = tabWidget_->findChildren<EditorWidget*>();
+
+  foreach (auto& tab, filesList) { tab->zoomOut(1); }
 }
 
 void MainWindow::executeSavingFile(const QString& filePath) {

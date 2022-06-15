@@ -15,13 +15,20 @@ public:
   void lineNumberAreaPaintEvent(QPaintEvent* event);
   int lineNumberAreaWidth();
   bool isChanged() const;
+  void zoomIn(int range = 1);
+  void zoomOut(int range = 1);
+
+signals:
+  void zoomInSignal();
+  void zoomOutSignal();
 
 protected:
   void resizeEvent(QResizeEvent* event) override;
+  void wheelEvent(QWheelEvent* event) override;
 
 private:
   bool isChanged_;
-  QWidget* lineNumberArea;
+  QWidget* lineNumberArea_;
 
   void updateLineNumberAreaWidth(int newBlockCount);
   void highlightCurrentLine();

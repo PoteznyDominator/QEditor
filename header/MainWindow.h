@@ -34,6 +34,8 @@ private:
   void newFile();
   void saveFile();
   void saveFileAs();
+  void zoomIn();
+  void zoomOut();
   void executeSavingFile(const QString& filePath);
   void addFileToTabWidget(const QString& filePath,
                           const QString& fileContent = "");

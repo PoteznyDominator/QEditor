@@ -4,6 +4,7 @@
 
 #include "../header/EditorWidget.h"
 #include "../header/LineNumberArea.h"
+#include <QDebug>
 #include <QPainter>
 #include <QPlainTextEdit>
 #include <QTextBlock>
@@ -13,7 +14,7 @@ EditorWidget::EditorWidget(QWidget* parent)
     : QPlainTextEdit(parent), isChanged_(false) {
   setWordWrapMode(QTextOption::NoWrap);
 
-  lineNumberArea = new LineNumberArea(this);
+  lineNumberArea_ = new LineNumberArea(this);
   //  connecting usefully signal for the linenumberarea
   connect(this, &EditorWidget::blockCountChanged, this,
           &EditorWidget::updateLineNumberAreaWidth);
@@ -29,7 +30,7 @@ EditorWidget::EditorWidget(QWidget* parent)
 }
 
 void EditorWidget::lineNumberAreaPaintEvent(QPaintEvent* event) {
-  QPainter painter(lineNumberArea);
+  QPainter painter(lineNumberArea_);
   painter.fillRect(event->rect(), Qt::lightGray);
   QTextBlock block = firstVisibleBlock();
   int blockNumber = block.blockNumber();
@@ -40,7 +41,7 @@ void EditorWidget::lineNumberAreaPaintEvent(QPaintEvent* event) {
     if (block.isVisible() && bottom >= event->rect().top()) {
       QString number = QString::number(blockNumber + 1);
       painter.setPen(Qt::black);
-      painter.drawText(0, top, lineNumberArea->width(), fontMetrics().height(),
+      painter.drawText(0, top, lineNumberArea_->width(), fontMetrics().height(),
                        Qt::AlignRight, number);
     }
 
@@ -68,8 +69,23 @@ void EditorWidget::resizeEvent(QResizeEvent* e) {
   QPlainTextEdit::resizeEvent(e);
 
   QRect cr = contentsRect();
-  lineNumberArea->setGeometry(
+  lineNumberArea_->setGeometry(
     QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
+}
+
+void EditorWidget::wheelEvent(QWheelEvent* event) {
+  QPlainTextEdit::wheelEvent(event);
+
+  // adding modifers for zooming in file
+  if (event->modifiers() == Qt::ControlModifier) {
+    if (event->delta() > 0) {
+      //      zoomIn(2);
+      emit zoomInSignal();
+      return;
+    }
+    emit zoomOutSignal();
+    //    zoomOut(2);
+  }
 }
 
 void EditorWidget::updateLineNumberAreaWidth(int newBlockCount) {
@@ -95,10 +111,24 @@ void EditorWidget::highlightCurrentLine() {
 }
 
 void EditorWidget::updateLineNumberArea(const QRect& rect, int dy) {
-  if (dy) lineNumberArea->scroll(0, dy);
+  if (dy) lineNumberArea_->scroll(0, dy);
   else
-    lineNumberArea->update(0, rect.y(), lineNumberArea->width(), rect.height());
+    lineNumberArea_->update(0, rect.y(), lineNumberArea_->width(),
+                            rect.height());
 
   if (rect.contains(viewport()->rect())) updateLineNumberAreaWidth(0);
 }
 bool EditorWidget::isChanged() const { return isChanged_; }
+
+void EditorWidget::zoomIn(int range) {
+  QPlainTextEdit::zoomIn(range);
+  dynamic_cast<LineNumberArea*>(lineNumberArea_)->zoomIn(font());
+}
+
+void EditorWidget::zoomOut(int range) {
+  // avoiding too small font
+  if (font().pointSize() <= 3) return;
+
+  QPlainTextEdit::zoomOut(range);
+  dynamic_cast<LineNumberArea*>(lineNumberArea_)->zoomOut(font());
+}

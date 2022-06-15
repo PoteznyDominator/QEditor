@@ -13,5 +13,8 @@ void LineNumberArea::paintEvent(QPaintEvent* event) {
 
 QSize LineNumberArea::sizeHint() const {
   return QSize(editorWidget->lineNumberAreaWidth(), 0);
-  ;
 }
+
+void LineNumberArea::zoomIn(QFont font) { setFont(font); }
+
+void LineNumberArea::zoomOut(QFont font) { setFont(font); }

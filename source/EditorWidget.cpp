@@ -31,7 +31,7 @@ EditorWidget::EditorWidget(QWidget* parent)
 
 void EditorWidget::lineNumberAreaPaintEvent(QPaintEvent* event) {
   QPainter painter(lineNumberArea_);
-  painter.fillRect(event->rect(), Qt::lightGray);
+  painter.fillRect(event->rect(), "#282828");
   QTextBlock block = firstVisibleBlock();
   int blockNumber = block.blockNumber();
   int top =
@@ -40,7 +40,7 @@ void EditorWidget::lineNumberAreaPaintEvent(QPaintEvent* event) {
   while (block.isValid() && top <= event->rect().bottom()) {
     if (block.isVisible() && bottom >= event->rect().top()) {
       QString number = QString::number(blockNumber + 1);
-      painter.setPen(Qt::black);
+      painter.setPen("#D8D8D8");
       painter.drawText(0, top, lineNumberArea_->width(), fontMetrics().height(),
                        Qt::AlignRight, number);
     }
@@ -60,7 +60,9 @@ int EditorWidget::lineNumberAreaWidth() {
     ++digits;
   }
 
-  int space = 5 + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
+  int baseSpace = 10;
+  int space =
+    baseSpace + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
 
   return space;
 }
@@ -98,9 +100,7 @@ void EditorWidget::highlightCurrentLine() {
   if (!isReadOnly()) {
     QTextEdit::ExtraSelection selection;
 
-    QColor lineColor = QColor(Qt::yellow).lighter(160);
 
-    selection.format.setBackground(lineColor);
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
     selection.cursor = textCursor();
     selection.cursor.clearSelection();

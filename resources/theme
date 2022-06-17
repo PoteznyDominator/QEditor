@@ -1,0 +1,11 @@
+@EditorWidgetBg = #353535
+@TabBarBg = #4f4f4f
+@TabHover = #424242
+@MenuBarBg = #353535
+@MenuBarSelectedBg = #7E7E7E
+
+@Border = rgba(0, 0, 0, 0.4)
+
+@TextColor = white
+@SecondaryTextColor = #D1D1D1
+@LinkTextColor = #22A6F1

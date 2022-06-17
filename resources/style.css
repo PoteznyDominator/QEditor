@@ -1,52 +1,40 @@
 QTabWidget::pane {
-    background: white;
-    border: 1px solid rgba(0, 0, 0, 0.5);
+    background: @MenuBarBg;
 }
 
-QTabWidget::tab-bar:top {
-    top: 1px;
-}
-
-QTabWidget::tab-bar:bottom {
-    bottom: 1px;
-}
-
-QTabWidget::tab-bar:left {
-    right: 1px;
-}
-
-QTabWidget::tab-bar:right {
-    left: 1px;
+QTabBar {
+    background: @TabBarBg;
 }
 
 QTabBar::close-button {
-    image: url(:/images/close-tab.png);
+    image: url(:/images/close-tab-white.png);
     width: 10px;
     padding: 2px;
     border-radius: 2px;
 }
 
 QTabBar::close-button::hover {
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 QTabBar::tab {
-    border: 1px solid rgba(0, 0, 0, 0.4);
+    border: 1px solid @Border;
+    color: @TextColor;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
 }
 
 QTabBar::tab:selected {
-    background: white;
+    background: @EditorWidgetBg;
     border-bottom: none;
 }
 
 QTabBar::tab:!selected {
-    background: silver;
+    background: @TabBarBg;
 }
 
 QTabBar::tab:!selected:hover {
-    background: #999;
+    background: @TabHover;
 }
 
 QTabBar::tab:bottom:!selected {
@@ -99,16 +87,28 @@ QTabBar::tab:left:only-one, QTabBar::tab:right:only-one {
     margin-bottom: 0;
 }
 
+/*Editor widget*/
+
 QPlainTextEdit {
     border: none;
+    background: @EditorWidgetBg;
+    color: @TextColor;
+}
+
+QWidget#LineNumberArea {
+    background: @MenuBarBg;
+    color: @TextColor;
 }
 
 /* Welcome widget */
+QWidget#WelcomeWidget {
+    background: @EditorWidgetBg;
+}
 
 QWidget#WelcomeWidget QPushButton {
     border: none;
     background: none;
-    color: blue;
+    color: @LinkTextColor;
     font-size: 12px;
     padding: 0px;
 }
@@ -117,6 +117,45 @@ QWidget#WelcomeWidget QPushButton::hover {
     text-decoration: underline;
 }
 
-QWidget#WelcomeWidget QLabel#WelcomeLabel {
-    font-size: 30px;
+QLabel#WelcomeLabel {
+    font-size: 35px;
+    color: @TextColor;
+    margin-bottom: -10px;
+}
+
+QLabel#SecondaryLabel {
+    font-size: 16px;
+    color: @SecondaryTextColor;
+    margin-top: -5px;
+    margin-bottom: 10px;
+}
+
+/*Main window*/
+QMenuBar {
+    background: @MenuBarBg;
+    color: @TextColor;
+}
+
+QMenuBar::item {
+    background: transparent;
+}
+
+QMenuBar::item:pressed QMenuBar::item:selected {
+    background: @MenuBarSelectedBg;
+    border: 1px solid @Border;
+}
+
+QMenuBar::item:selected {
+    background: @MenuBarSelectedBg;
+    border: 1px solid @Border;
+}
+
+QMenu {
+    background: @MenuBarBg;
+    border: 1px solid @Border;
+    color: @TextColor;
+}
+
+QMenu::item:selected {
+    background: @MenuBarSelectedBg;
 }

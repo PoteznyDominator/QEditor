@@ -5,7 +5,9 @@
 #include "../header/LineNumberArea.h"
 
 LineNumberArea::LineNumberArea(EditorWidget* parent)
-    : QWidget(parent), editorWidget(parent) {}
+    : QWidget(parent), editorWidget(parent) {
+  setObjectName("LineNumberArea");
+}
 
 void LineNumberArea::paintEvent(QPaintEvent* event) {
   editorWidget->lineNumberAreaPaintEvent(event);

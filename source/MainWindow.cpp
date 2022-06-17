@@ -56,8 +56,11 @@ void MainWindow::initWelcomeWidget() {
   layout->setAlignment(Qt::AlignHCenter);
   auto* newFileBtn = new QPushButton("New file", welcomeWidget_);
   auto* openFileBtn = new QPushButton("Open file", welcomeWidget_);
-  auto* welcomeLabel = new QLabel("Welcome to QEditor ;)");
+  auto* welcomeLabel = new QLabel("EditorDiff");
+  auto* secondaryLabel = new QLabel("Code faster and better");
+  welcomeLabel->setAlignment(Qt::AlignCenter);
   welcomeLabel->setObjectName("WelcomeLabel");
+  secondaryLabel->setObjectName("SecondaryLabel");
 
   newFileBtn->setCursor(Qt::PointingHandCursor);
   openFileBtn->setCursor(Qt::PointingHandCursor);
@@ -68,6 +71,7 @@ void MainWindow::initWelcomeWidget() {
 
   layout->addStretch();
   layout->addWidget(welcomeLabel);
+  layout->addWidget(secondaryLabel);
   layout->addWidget(newFileBtn);
   layout->addWidget(openFileBtn);
   layout->addStretch();
@@ -77,6 +81,8 @@ void MainWindow::initWelcomeWidget() {
 
 void MainWindow::initTabWidget() {
   tabWidget_ = new QTabWidget;
+  tabWidget_->tabBar()->setDocumentMode(true);
+  tabWidget_->tabBar()->setExpanding(false);
   tabWidget_->setMovable(true);
   tabWidget_->setTabsClosable(true);
   connect(tabWidget_, &QTabWidget::tabCloseRequested, this,
@@ -164,11 +170,14 @@ void MainWindow::addFileToTabWidget(const QString& filePath,
 
   const auto fileName = Utils::getFileName(filePath);
 
-  // if file is already opened set it as current widget
-  int index = Utils::getIndexOfOpenedFile(filePath, tabWidget_);
-  if (index) {
-    tabWidget_->setCurrentIndex(index);
-    return;
+  // for first file opened we skip the check for opened files
+  if (tabWidget_->count() > 0) {
+    // if file is already opened set it as current widget
+    int index = Utils::getIndexOfOpenedFile(filePath, tabWidget_);
+    if (index != -1) {
+      tabWidget_->setCurrentIndex(index);
+      return;
+    }
   }
 
   auto* editor = new EditorWidget(tabWidget_);

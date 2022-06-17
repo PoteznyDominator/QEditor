@@ -4,5 +4,9 @@
     </qresource>
     <qresource prefix="/images">
         <file>close-tab.png</file>
+        <file>close-tab-white.png</file>
+    </qresource>
+    <qresource prefix="/theme">
+        <file>theme</file>
     </qresource>
 </RCC>
